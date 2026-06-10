@@ -1,0 +1,41 @@
+.canvas {
+  position: fixed;
+  inset: 0;
+  display: block;
+  touch-action: none; /* let pointer handlers own pan/zoom gestures */
+}
+
+/* Static background grid. Never receives pointer events. */
+.grid {
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Dynamic squares + handles, stacked on top; owns all canvas interaction. */
+.scene {
+  z-index: 1;
+}
+
+/* Floating editor over a clicked dimension label. */
+.dimInput {
+  position: fixed;
+  z-index: 5;
+  width: 70px;
+  margin: 0;
+  padding: 1px 4px;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.2;
+  text-align: center;
+  color: #18181b;
+  background: #ffffff;
+  border: 1px solid #18181b;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+  transform-origin: center;
+}
+
+.dimInput:focus {
+  outline: none;
+  border-color: #6ea8fe;
+}

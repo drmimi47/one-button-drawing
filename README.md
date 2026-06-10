@@ -1,3 +1,3 @@
-# floorplan-generator-v2
+# one-button-drawing
 
-Floorplan generator version 2
+One-button drawing description

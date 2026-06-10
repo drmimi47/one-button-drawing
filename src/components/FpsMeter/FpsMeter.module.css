@@ -1,0 +1,16 @@
+.meter {
+  position: fixed;
+  top: 10px;
+  right: 12px;
+  z-index: 20;
+
+  color: #000000;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}

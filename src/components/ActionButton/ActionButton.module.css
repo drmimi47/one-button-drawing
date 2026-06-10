@@ -1,0 +1,222 @@
+.button {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  /* No perspective → orthographic projection: true isometric, and the top-down
+     state's edges align exactly (perspective would shrink the far face). */
+
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: transform 140ms ease;
+}
+
+.button:hover {
+  transform: translateX(-50%) translateY(-2px);
+}
+
+.button:active {
+  transform: translateX(-50%) translateY(0);
+}
+
+.button:focus-visible {
+  outline: 2px solid #6ea8fe;
+  outline-offset: 3px;
+  border-radius: 14px;
+}
+
+/* ---- Tooltip --------------------------------------------------------- */
+
+.tooltip {
+  position: absolute;
+  /* Sit just above the cube (which is centred in the 64px button), not above
+     the whole button — keeps a small, even gap from the cube. */
+  bottom: calc(100% - 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  color: #000000;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+
+  opacity: 0;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #ffffff;
+}
+
+.button:hover .tooltip,
+.button:focus-visible .tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ---- Isometric cube -------------------------------------------------- */
+
+/* Wrapper that carries the playful "jump" so it stays independent of the
+   button's centring transform and the cube's own 3D rotation. */
+.cubeJump {
+  display: grid;
+  place-items: center;
+  /* Squash/stretch reads as "grounded" when scaled from the base. 2D transforms
+     only — they don't flatten the cube's preserve-3d context. */
+  transform-origin: bottom center;
+  transform: translateY(0) scale(1, 1);
+}
+
+/* Periodic invitation hop: one springy squash-and-stretch jump, then a long
+   rest, looping until the user first interacts. Master timing is linear so each
+   phase below sets its own easing for a smooth gravity arc. */
+.inviting {
+  animation: cubeJump 6s linear infinite;
+}
+
+/* Held while the pointer rests over the button. Applied only at a loop boundary
+   (cube grounded), so the current hop finishes before motion stops. */
+.paused {
+  animation-play-state: paused;
+}
+
+/* A full jump arc with per-phase easing: decelerate up to a single apex, then
+   accelerate back down (gravity), so there's no mid-air hang or hard plop. The
+   motion finishes by ~33%; the rest of the cycle is a deliberate pause. */
+@keyframes cubeJump {
+  0%,
+  4% {
+    transform: translateY(0) scale(1, 1);
+    /* crouch eases in */
+    animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+  }
+  9% {
+    /* anticipation: crouch down, then push off */
+    transform: translateY(0) scale(1.1, 0.88);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.8, 0.4);
+  }
+  13% {
+    /* rising fast — stretched skinny (tall and thin) to read as speed */
+    transform: translateY(-30px) scale(0.84, 1.2);
+    /* Decelerate into the apex: the stretch eases out monotonically toward the
+       default shape (no dip below 1.0), so there's no wobble at the top. */
+    animation-timing-function: cubic-bezier(0.2, 0.55, 0.4, 1);
+  }
+  18% {
+    /* apex — brief zero-velocity, settles to the default cube shape */
+    transform: translateY(-50px) scale(1, 1);
+    animation-timing-function: cubic-bezier(0.5, 0, 0.85, 0.35);
+  }
+  22% {
+    /* falling fast — the same skinny stretch as the rise */
+    transform: translateY(-30px) scale(0.84, 1.2);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.7, 1);
+  }
+  24% {
+    /* land: impact squash */
+    transform: translateY(0) scale(1.12, 0.86);
+    animation-timing-function: cubic-bezier(0.3, 0, 0.4, 1);
+  }
+  28% {
+    /* squish out — spreads wider and gets a little "fat", staying grounded */
+    transform: translateY(0) scale(1.22, 0.84);
+    animation-timing-function: cubic-bezier(0.35, 0, 0.3, 1);
+  }
+  33%,
+  100% {
+    /* relax back to normal */
+    transform: translateY(0) scale(1, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inviting {
+    animation: none;
+  }
+}
+
+.cube {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  transform-style: preserve-3d;
+  /* Resting: true isometric view (down the 1,1,1 diagonal) — equal, symmetric
+     foreshortening on the top, front and right faces. 35.264° = arctan(1/√2). */
+  transform: rotateX(-35.264deg) rotateY(-45deg);
+  /* Non-overshooting ease so the rotation never passes edge-on and flashes. */
+  transition: transform 420ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+/* Hover/focus: flip up to look straight down at the top face (orthogonal 2D). */
+.button:hover .cube,
+.button:focus-visible .cube {
+  transform: rotateX(-90deg) rotateY(0deg);
+}
+
+/* Solid grey cube, no outlines — faces are differentiated by shade alone.
+   Backfaces hidden so only the three front faces show (no z-fighting). */
+.face {
+  position: absolute;
+  /* Overgrow so adjacent faces overlap by ~1px and no background hairline
+     shows through the anti-aliased seams (keeps edges seamless, no outline). */
+  inset: -1px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Each face positioned by half the edge length (22px / 2 = 11px). Opposite
+   faces share a shade so the cube stays consistent as it flips: top/bottom
+   light, front/back medium, left/right dark. */
+.front {
+  transform: translateZ(12px);
+  background: #71717a;
+}
+
+.back {
+  transform: rotateY(180deg) translateZ(12px);
+  background: #71717a;
+}
+
+.right {
+  transform: rotateY(90deg) translateZ(12px);
+  background: #52525b;
+}
+
+.left {
+  transform: rotateY(-90deg) translateZ(12px);
+  background: #52525b;
+}
+
+.top {
+  transform: rotateX(90deg) translateZ(12px);
+  background: #a1a1aa;
+}
+
+.bottom {
+  transform: rotateX(-90deg) translateZ(12px);
+  background: #a1a1aa;
+}
