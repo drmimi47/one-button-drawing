@@ -1,0 +1,65 @@
+/* Top-right action cluster — a pinned mirror of the top-left toolbar: a text pill plus a
+   circular icon holder, sharing the same white surface, border, shadow, and icon-grey. */
+.bar {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  /* Same layer as the top-left toolbar (32), BELOW the login modal's backdrop (49): the
+     cluster is always on screen (so it doesn't pop in after sign-in / guest), but while the
+     login popup is up the grey film dims it and blocks clicks — exactly like the other chrome. */
+  z-index: 32;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Shared pill surface for both controls. */
+.export,
+.signOut {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 999px;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.14);
+  color: #52525b;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+}
+
+.export:hover,
+.signOut:hover {
+  color: #18181b;
+  background: #e9e9ec;
+}
+
+.export:focus-visible,
+.signOut:focus-visible {
+  outline: 2px solid #6ea8fe;
+  outline-offset: 1px;
+}
+
+/* "Export" text pill — matches the TopBar text pills. */
+.export {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 16px;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+/* Circular sign-out button — matches the top-left menu icon holder. */
+.signOut {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}

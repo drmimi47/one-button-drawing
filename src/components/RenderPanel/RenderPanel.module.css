@@ -1,0 +1,176 @@
+/* Floating render preview, pinned top-right (clear of the canvas centre so geometry can be edited
+   while it stays open). Above the canvas/nav, below the login modal (49). No backdrop and no
+   outside-click dismiss — it closes only via the × button, so it persists during canvas edits. */
+.panel {
+  position: fixed;
+  z-index: 45;
+  top: 72px;
+  right: 16px;
+
+  width: 400px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 88px);
+
+  display: flex;
+  flex-direction: column;
+
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 18px 52px rgba(15, 23, 42, 0.26);
+  font-family: inherit;
+  color: #18181b;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 12px 16px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #18181b;
+}
+
+.close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  color: #52525b;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+}
+
+.close:hover {
+  color: #18181b;
+  background: #f1f1f3;
+}
+
+.body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  padding: 16px;
+  background: #f7f8fa;
+}
+
+.image {
+  display: block;
+  max-width: 100%;
+  max-height: 60vh;
+  border-radius: 8px;
+}
+
+.status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #52525b;
+  text-align: center;
+}
+
+.error {
+  color: #b45309;
+  max-width: 320px;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid rgba(15, 23, 42, 0.12);
+  border-top-color: #52525b;
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2000ms;
+  }
+}
+
+/* Dev-only: the exact prompt fed to Gemini, beneath the image. */
+.promptBlock {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fafafa;
+}
+
+.promptLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a1a1aa;
+  margin-bottom: 6px;
+}
+
+.promptText {
+  margin: 0;
+  max-height: 120px;
+  overflow-y: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #3f3f46;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.primary {
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
+
+  border: none;
+  background: #3f3f46;
+  color: #ffffff;
+}
+
+.primary:hover {
+  background: #18181b;
+}
+
+.primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

@@ -1,0 +1,143 @@
+/* Fills the popup field; scrolls if many clusters are saved. */
+.list {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+/* Empty state, centred and muted. */
+.empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 32px;
+  text-align: center;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: #a1a1aa;
+  user-select: none;
+}
+
+/* One saved cluster: a thumbnail card you grab to place. */
+.item {
+  position: relative;
+  flex: none;
+  height: 132px;
+
+  background: #fbfbfc;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none; /* pointer capture drives the drag, not the browser */
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.item:hover {
+  border-color: rgba(110, 168, 254, 0.7);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
+}
+
+.item:active {
+  cursor: grabbing;
+}
+
+/* The card being dragged for reorder — dimmed + lifted so its new slot reads clearly. */
+.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+  border-color: #6ea8fe;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.18);
+}
+
+.thumbCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Title / live-count badge, bottom-left. Click to rename the cluster. */
+.count {
+  position: absolute;
+  left: 8px;
+  bottom: 6px;
+  max-width: calc(100% - 48px);
+  padding: 3px 9px;
+
+  border: none;
+  cursor: text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #52525b;
+
+  background: rgba(255, 255, 255, 0.86);
+  border-radius: 999px;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.count:hover {
+  background: #ffffff;
+  color: #18181b;
+}
+
+/* Inline title editor, occupying the badge's spot. */
+.nameInput {
+  position: absolute;
+  left: 8px;
+  bottom: 6px;
+  max-width: calc(100% - 16px);
+  width: 200px;
+  padding: 3px 9px;
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #18181b;
+
+  background: #ffffff;
+  border: 1px solid #6ea8fe;
+  border-radius: 999px;
+  outline: none;
+}
+
+/* Delete (×), top-right. */
+.delete {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+
+  font-size: 16px;
+  line-height: 1;
+  color: #52525b;
+  background: rgba(255, 255, 255, 0.86);
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.delete:hover {
+  background: #ef4444;
+  color: #ffffff;
+}

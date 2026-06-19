@@ -1,0 +1,8 @@
+# Adjust constraints or add new ones
+Minimum wall thickness 4"
+Maximum wall thickness 36"
+Every room must maintain area ≥ 36 sq ft
+No room side may become < 5'
+Maximum total area 15,000 sq ft
+Maximum total gross area 20,000 sq ft
+Maximum room count 100

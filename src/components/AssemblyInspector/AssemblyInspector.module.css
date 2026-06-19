@@ -1,0 +1,237 @@
+/* Left-docked "smart panel" inspector — the data layer for a selected facade panel. Mirrors the
+   right-side popups' white card + shadow, pinned to the left edge below the top-left icon cluster. */
+.panel {
+  position: fixed;
+  z-index: 30;
+  top: 72px;
+  left: 16px;
+
+  width: 300px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 88px);
+
+  display: flex;
+  flex-direction: column;
+
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 18px 52px rgba(15, 23, 42, 0.26);
+  font-family: inherit;
+  color: #18181b;
+  overflow: hidden;
+}
+
+.header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px 10px 14px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+/* Clickable title that opens the facade-type dropdown. */
+.titleButton {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  margin: -4px -6px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 120ms ease;
+}
+
+.titleButton:hover {
+  background: #f4f4f5;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+}
+
+.chevron {
+  flex: 0 0 auto;
+  color: #71717a;
+}
+
+/* Grouped facade-type dropdown, floating below the header. */
+.menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 8px;
+  right: 8px;
+  z-index: 5;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 6px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 18px 52px rgba(15, 23, 42, 0.26);
+}
+
+.menuGroup {
+  padding: 4px 0;
+}
+
+.menuGroup + .menuGroup {
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.menuGroupTitle {
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a1a1aa;
+}
+
+.menuItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 8px;
+  border: none;
+  border-radius: 7px;
+  background: none;
+  font-family: inherit;
+  font-size: 12px;
+  color: #18181b;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menuItem:hover {
+  background: #f4f4f5;
+}
+
+.menuItemActive {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.check {
+  flex: 0 0 auto;
+  color: #2563eb;
+}
+
+/* Short assembly code chip (e.g. "UCWP"). */
+.badge {
+  flex: 0 0 auto;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #f1f1f3;
+  color: #52525b;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.body {
+  padding: 6px 14px 14px;
+  overflow-y: auto;
+}
+
+.group {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.group:last-child {
+  border-bottom: none;
+}
+
+.groupTitle {
+  margin: 0 0 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a1a1aa;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 30px;
+}
+
+.label {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: #52525b;
+}
+
+.control {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 62%;
+  box-sizing: border-box;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  border-radius: 7px;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 12px;
+  color: #18181b;
+  text-align: right;
+}
+
+.control:focus {
+  outline: none;
+  border-color: #6ea8fe;
+  box-shadow: 0 0 0 2px rgba(110, 168, 254, 0.25);
+}
+
+select.control {
+  text-align: left;
+  cursor: pointer;
+}
+
+.numberWrap {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  max-width: 62%;
+}
+
+.number {
+  max-width: none;
+  width: 64px;
+  flex: 0 0 auto;
+}
+
+.unit {
+  flex: 0 0 auto;
+  font-size: 10px;
+  color: #a1a1aa;
+  white-space: nowrap;
+}
+
+/* Read-only derived value (R-value). */
+.derived {
+  font-size: 12px;
+  font-weight: 600;
+  color: #18181b;
+}

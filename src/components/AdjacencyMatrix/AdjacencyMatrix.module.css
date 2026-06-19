@@ -1,0 +1,252 @@
+/* Floating dev window. Sits above all app UI (NavBar tops out at z-index 32). */
+.window {
+  position: fixed;
+  z-index: 40;
+
+  display: flex;
+  flex-direction: column;
+  max-width: 94vw;
+
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.22);
+  overflow: hidden;
+
+  font-family: inherit;
+  color: #18181b;
+}
+
+/* Draggable title bar (Chrome-style), with the window buttons on the right. */
+.titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 8px 8px 14px;
+
+  background: #f1f1f3;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.winButtons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.winBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+
+  border: none;
+  border-radius: 7px;
+  background: none;
+  color: #52525b;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+}
+
+.winBtn:hover {
+  background: rgba(15, 23, 42, 0.08);
+  color: #18181b;
+}
+
+.closeBtn:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+/* Matrix viewport. Sizes to the table's natural width/height on spawn (so the window
+   hugs it with no clipping or dead space), only capping at the viewport — past which it
+   scrolls. Still user-resizable. */
+.body {
+  width: max-content;
+  height: max-content;
+  max-width: 94vw;
+  max-height: 76vh;
+  overflow: auto;
+  resize: both;
+  background: #f7f8fa;
+}
+
+.matrix {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12px;
+}
+
+.matrix th,
+.matrix td {
+  border-right: 1px solid rgba(15, 23, 42, 0.06);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+/* Sticky top-left corner — above both header bands. */
+.corner {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  min-width: 132px;
+  padding: 6px 10px;
+  text-align: left;
+  font-weight: 600;
+  color: #a1a1aa;
+  background: #ececef;
+}
+
+/* Sticky column headers: vertical room keys reading bottom-to-top. */
+.colHead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 116px;
+  padding: 6px 0;
+  background: #ececef;
+}
+
+.colLabel {
+  display: inline-block;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  font-weight: 600;
+  color: #52525b;
+}
+
+/* Sticky row headers: readable program labels on the left. */
+.rowHead {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 132px;
+  max-width: 132px;
+  padding: 4px 10px;
+  text-align: left;
+  font-weight: 600;
+  color: #3f3f46;
+  background: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A row with unsaved edits gets a left accent + tint. */
+.rowDirty {
+  box-shadow: inset 3px 0 0 #52525b;
+  color: #18181b;
+}
+
+.cell {
+  width: 34px;
+  height: 30px;
+  padding: 0;
+  text-align: center;
+  background: #ffffff;
+}
+
+/* The source==target diagonal — a faint marker (still editable). */
+.diag {
+  background: rgba(15, 23, 42, 0.05);
+}
+
+.cellInput {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #18181b;
+  padding: 0;
+}
+
+.cellInput:focus {
+  outline: 2px solid #52525b;
+  outline-offset: -2px;
+}
+
+/* Footer: status text + actions. */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  background: #ffffff;
+}
+
+.status {
+  font-size: 12px;
+  color: #a1a1aa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.ghostBtn,
+.primaryBtn {
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    opacity 120ms ease;
+}
+
+.ghostBtn {
+  color: #52525b;
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.ghostBtn:hover:not(:disabled) {
+  color: #18181b;
+  background: rgba(15, 23, 42, 0.1);
+}
+
+.primaryBtn {
+  color: #ffffff;
+  background: #3f3f46;
+}
+
+.primaryBtn:hover:not(:disabled) {
+  background: #18181b;
+}
+
+.ghostBtn:disabled,
+.primaryBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

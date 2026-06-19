@@ -1,0 +1,256 @@
+================================================================================
+ CONSTRAINTS SYSTEM — how the front end and back end work
+ (temporary developer report; safe to delete)
+================================================================================
+
+PURPOSE
+  The "Constraints" box lets a designer write floorplan rules in plain English
+  (e.g. "Minimum wall thickness 4\""). Those words are parsed into a structured
+  object, and the canvas enforces them every frame in three different ways:
+    1. flag offending rooms yellow (per-room rules),
+    2. wash the whole canvas yellow (global budgets),
+    3. hard-stop a drag at the boundary so you physically can't violate (clamp).
+
+
+--------------------------------------------------------------------------------
+ 1. END-TO-END DATA FLOW
+--------------------------------------------------------------------------------
+
+  constraints_file.txt  (seed text, loaded at startup via ?raw)
+        │
+        ▼
+  NavBar Constraints box  ── user edits draft, clicks "Save" ──┐
+   (src/components/NavBar/NavBar.tsx)                          │
+        │ shows: comment lines greyed, violated lines yellow   │
+        ▼                                                      ▼
+  App.tsx  handleConstraintsSave(text)            App.tsx  (mount: parse seed once)
+   - setConstraintsText(text)
+   - setConstraintsBusy(true)  → box shows "Saving…"
+   - await parseConstraints(text)   ◄── BACK END (LLM or regex)
+   - setConstraints(structured)
+   - setConstraintsBusy(false) → box auto-closes
+        │
+        │ constraints: Constraints  (structured object)
+        ▼
+  InfiniteCanvas  (constraints prop → constraintsRef, read every frame)
+   (src/components/InfiniteCanvas/InfiniteCanvas.tsx)
+        │
+        ├─ drawSceneLayer():   per-room findViolations()  → yellow flags
+        │                      global sums  → totalArea/gross/roomCount exceeded
+        │                      emits CanvasStats (incl. violatedKeys) via onStatsChange
+        │
+        └─ useCanvasInteractions (drag):  clampDragToConstraints()  → hard stop
+             (src/hooks/useCanvasInteractions.ts  +  backend/clamp.ts)
+        │
+        ▼
+  App.tsx stats  → StatsBar (Efficiency/Room Count/areas, amber when exceeded)
+                 → NavBar Constraints button superscript badge (flag count)
+                 → yellow full-screen overlay div when a global budget is broken
+                 → stats.violatedKeys flow back to NavBar to highlight broken lines
+
+
+--------------------------------------------------------------------------------
+ 2. THE STRUCTURED SHAPE  (backend/types.ts)
+--------------------------------------------------------------------------------
+
+  interface Constraints {            // every field optional; absent = "no rule"
+    minWallThicknessInches?      // per wall side, inches
+    maxWallThicknessInches?      // per wall side, inches
+    minRoomAreaSqft?             // per room, ft²
+    maxRoomAreaSqft?             // per room, ft²
+    minRoomSideFt?               // per interior edge, feet
+    maxTotalAreaSqft?            // GLOBAL: summed interior area, ft²
+    maxTotalGrossAreaSqft?       // GLOBAL: summed outer footprint, ft²
+    maxRoomCount?                // GLOBAL: number of rooms
+  }
+
+  - EMPTY_CONSTRAINTS = {}  → canvas does zero constraint work (fast path).
+  - hasAnyConstraint(c)     → cheap gate so hot paths skip checks when nothing set.
+  - This object is the SINGLE SOURCE OF TRUTH. The LLM never enforces anything;
+    it only fills this shape. To add a new rule you add a field here (see §8).
+
+
+--------------------------------------------------------------------------------
+ 3. BACK END — PARSING TEXT → Constraints  (backend/parseConstraints.ts)
+--------------------------------------------------------------------------------
+
+  parseConstraints(text): Promise<Constraints>
+    1. stripComments(text): drop any line whose first non-space char is '#'
+       (Python-style comments; ignored by parser AND greyed in the UI).
+    2. If empty → return {}.
+    3. If a VITE_ANTHROPIC_API_KEY is present → parseWithLLM(); on ANY error,
+       fall back to parseConstraintsLocally(). No key → go straight to local.
+    So the app ALWAYS works, online or offline.
+
+  parseWithLLM(text, key)
+    - POST https://api.anthropic.com/v1/messages
+    - model: claude-haiku-4-5-20251001, max_tokens 256
+    - header 'anthropic-dangerous-direct-browser-access: true' (client-side app)
+    - Forces ONE tool call: tool_choice = { type:'tool', name:'set_constraints' }
+    - SET_CONSTRAINTS_TOOL.input_schema mirrors Constraints exactly; each field's
+      description states its unit (inches / feet / sqft) so the model converts.
+    - Reads the tool_use block's `input`, passes it through sanitize().
+
+  sanitize(raw)
+    - Keeps only known fields that are positive numbers; floors maxRoomCount.
+    - Anything malformed is dropped → bad LLM output can't corrupt the rules.
+
+  parseConstraintsLocally(text)   (deterministic regex fallback)
+    - Recognises the seeded vocabulary, e.g.:
+        "min wall thickness 4\""              → minWallThicknessInches
+        "max wall thickness 36\""             → maxWallThicknessInches
+        "area >= 36 sq ft" / "at least 36"    → minRoomAreaSqft
+        "max room area 200"                   → maxRoomAreaSqft
+        "no room side may become < 5'"        → minRoomSideFt
+        "Maximum total area 15,000 sq ft"     → maxTotalAreaSqft  (commas stripped)
+        "Maximum total gross area 20,000"     → maxTotalGrossAreaSqft (keyed on "gross")
+        "Maximum room count 100"              → maxRoomCount      (keyed on rooms/count)
+    - Ordering/keywords disambiguate (e.g. "total" vs per-room, "gross" vs interior).
+
+  NOTE: backend/parsePrompt.ts is a SEPARATE feature (room generation), not
+  constraints — don't confuse the two.
+
+
+--------------------------------------------------------------------------------
+ 4. FRONT END — the Constraints box  (NavBar.tsx + NavBar.module.css)
+--------------------------------------------------------------------------------
+
+  - Opened from the "Constraints" nav button. Local `constraintsDraft` holds edits
+    until Save; closing without saving discards them. Re-opening reloads from the
+    saved text.
+
+  - Syntax highlight is a TRANSPARENT-text <textarea> on top of a backdrop <div>
+    (.popupHighlight) whose metrics match exactly, so the rendered text sits under
+    what you type. Per line, the backdrop applies:
+        * .comment  (grey)  if the line starts with '#'
+        * .violated (yellow) if the line's rule is currently being broken
+    Line→rule matching reuses parseConstraintsLocally(line) and checks whether any
+    of its keys is in `violatedConstraintKeys` (see §6d). Comments never highlight.
+
+  - SAVE flow (mirrors a real round-trip):
+        click Save → App sets constraintsBusy=true
+        button reads "Saving…", hint reads "Applying…", panel is LOCKED
+        (Escape / click-out / nav toggle all suppressed while busy)
+        when App finishes parsing+applying → busy=false → panel auto-closes.
+    So it only closes once the rules are actually live.
+
+  - Constraints nav button shows a superscript flag count (amber) = how many rooms
+    are currently flagged (stats.constraintFlags). 0 → no badge.
+
+
+--------------------------------------------------------------------------------
+ 5. APP ORCHESTRATION  (src/App.tsx)
+--------------------------------------------------------------------------------
+
+  state:
+    constraintsText  : the raw box text (seeded from constraints_file.txt)
+    constraints      : the parsed Constraints object (EMPTY at first)
+    constraintsBusy  : true while a Save is parsing/applying
+    stats            : CanvasStats from the canvas (counts, areas, exceeded flags,
+                       violatedKeys)
+
+  effects/handlers:
+    - on mount: parseConstraints(seed) once → setConstraints.
+    - handleConstraintsSave(text): setText → busy=true → parse → setConstraints →
+      busy=false. (The old debounced-on-keystroke parse was removed; saves are the
+      only re-parse path now.)
+    - Renders <InfiniteCanvas constraints={constraints} onStatsChange={setStats}/>.
+    - Yellow full-screen overlay div (zIndex 1, between grid z0 and scene z2) shown
+      when totalAreaExceeded || grossAreaExceeded || roomCountExceeded. It sits
+      BEHIND the rooms so per-room flags stay visible.
+    - Passes constraintFlagCount + violatedKeys down to NavBar.
+
+
+--------------------------------------------------------------------------------
+ 6. ENFORCEMENT — three independent mechanisms
+--------------------------------------------------------------------------------
+
+ 6a. PER-ROOM FLAGS (flag-only)         backend/violations.ts → findViolations()
+    Pure, read-only. For each room returns ShapeViolations:
+       flaggedEdges[]  : interior-edge indices to paint yellow (too thin/thick wall,
+                         or side shorter than minRoomSideFt)
+       flaggedKeys[]   : which Constraints fields this room breaks
+       areaOver        : interior area > maxRoomAreaSqft
+       areaUnder       : interior area < minRoomAreaSqft
+       any             : breaks anything (renderer gate)
+    drawSceneLayer builds a Map<shapeId, ShapeViolations> for all rooms; its size is
+    the "constraint flags" count. Offending walls/area are drawn in warning yellow.
+    This NEVER changes geometry — it only flags.
+
+ 6b. GLOBAL BUDGETS (flag-only)         in InfiniteCanvas.drawSceneLayer()
+    Each frame it sums interior area and gross area (shapeAreaInUnit /
+    shapeGrossAreaInUnit, in ft²) and counts rooms, then compares to the live sums:
+       totalAreaExceeded  = total  > maxTotalAreaSqft
+       grossAreaExceeded  = gross  > maxTotalGrossAreaSqft
+       roomCountExceeded  = count  > maxRoomCount
+    These drive the yellow canvas wash and the amber StatsBar readouts. They NEVER
+    clamp a drag — you fix them by deleting rooms.
+
+ 6c. HARD LOCK (clamp)                  backend/clamp.ts (used in the drag hook)
+    Applies to the bounded per-edge/per-area rules during an edge/vertex/thickness
+    drag — the drag physically stops at the boundary.
+      worsensConstraints(candidate, original, c): would this edit push a metric the
+        WRONG way past its bound? Directional, per-metric, per-edge:
+          - min bound lo: blocked if candidate < min(original, lo)        (floor)
+          - max bound hi: blocked if candidate > max(original, hi)        (ceiling)
+        So a COMPLIANT metric is held at the bound; an ALREADY-VIOLATING one is held
+        at its current value (you may improve it or keep it, never worsen it).
+      clampDragToConstraints(makeCandidate, original, dx, dy, c): if the full delta
+        worsens, BINARY-SEARCH the largest fraction that doesn't → the edge sits
+        exactly on the boundary.
+    The drag hook feeds INCREMENTAL per-frame deltas and re-baselines `orig` to each
+    clamped result, so the lock RATCHETS: once a metric crosses its bound mid-drag,
+    it can't be dragged back across within the same gesture.
+    (Global budgets are intentionally NOT clamped — only flagged.)
+
+ 6d. VIOLATED-LINE FEEDBACK             stats.violatedKeys → NavBar highlight
+    drawSceneLayer unions every room's flaggedKeys and adds the three breached
+    global keys, emits as CanvasStats.violatedKeys (sorted, deduped). App passes it
+    to NavBar, which yellow-highlights any constraints line whose rule is in the set.
+
+
+--------------------------------------------------------------------------------
+ 7. UNITS  (src/constants.ts)
+--------------------------------------------------------------------------------
+    WORLD_UNITS_PER_FOOT = 10        (1 ft = 10 world units)
+    DEFAULT_WALL_WORLD   = 5 world units (= 0.5 ft = 6 inches)
+    - Wall thickness rules are authored in INCHES → converted to world via
+      (inches/12) * WORLD_UNITS_PER_FOOT.
+    - Side length rules are in FEET → feet * WORLD_UNITS_PER_FOOT.
+    - Area rules/readouts are always computed in ft² regardless of display unit.
+
+
+--------------------------------------------------------------------------------
+ 8. FILE MAP
+--------------------------------------------------------------------------------
+    backend/types.ts              Constraints shape + hasAnyConstraint
+    backend/parseConstraints.ts   text → Constraints (LLM + regex fallback, comments)
+    backend/violations.ts         findViolations (per-room flags + flaggedKeys)
+    backend/clamp.ts              worsensConstraints + clampDragToConstraints (hard lock)
+    src/constraints_file.txt      seeded default rules (loaded at startup)
+    src/App.tsx                   state, save flow, busy, yellow overlay, wiring
+    src/components/NavBar/        the box UI: highlight, comments, Save/lock, badge
+    src/components/InfiniteCanvas/InfiniteCanvas.tsx
+                                  per-frame violation/global computation + stats emit
+    src/hooks/useCanvasInteractions.ts
+                                  applies clampDragToConstraints during drags
+    src/components/StatsBar/      Efficiency/Room Count/areas, amber when exceeded
+    src/types.ts                  CanvasStats (constraintFlags, *Exceeded, violatedKeys)
+
+
+--------------------------------------------------------------------------------
+ 9. HOW TO ADD A NEW CONSTRAINT (checklist)
+--------------------------------------------------------------------------------
+    1. backend/types.ts        : add the optional field + include in hasAnyConstraint.
+    2. backend/parseConstraints: add it to SET_CONSTRAINTS_TOOL.input_schema (with a
+                                  unit-stating description), to sanitize(), and a
+                                  regex branch in parseConstraintsLocally().
+    3. Enforcement:
+         per-room flag → add a check in backend/violations.ts (push to flagged/keys).
+         hard lock     → add a directional check in backend/clamp.ts worsensConstraints.
+         global budget → sum + compare in InfiniteCanvas.drawSceneLayer, add an
+                         *Exceeded flag to CanvasStats (src/types.ts), surface in
+                         StatsBar + the App yellow overlay.
+    4. (optional) add a default line to src/constraints_file.txt.
+
+================================================================================

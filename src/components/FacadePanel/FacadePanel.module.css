@@ -1,0 +1,308 @@
+/* Right-docked Facade Layers control panel. Mirrors the right-side Render popup / left-side Inspector card
+   (white surface + shadow), pinned below the top-right action cluster. */
+.panel {
+  position: fixed;
+  z-index: 30;
+  top: 72px;
+  right: 16px;
+
+  width: 300px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 88px);
+
+  display: flex;
+  flex-direction: column;
+
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 18px 52px rgba(15, 23, 42, 0.26);
+  font-family: inherit;
+  color: #18181b;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.body {
+  padding: 4px 14px 14px;
+  overflow-y: auto;
+}
+
+.group {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.group:last-child {
+  border-bottom: none;
+}
+
+.groupTitle {
+  margin: 0 0 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a1a1aa;
+}
+
+/* Border / Panels segmented switch. */
+.segmented {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: #f4f4f5;
+  border-radius: 10px;
+}
+
+.seg {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #52525b;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
+}
+
+.seg:hover {
+  color: #18181b;
+}
+
+.segActive,
+.segActive:hover {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.hint,
+.empty {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: #71717a;
+}
+
+/* Full-width toggle rows (Material-ID, Rationalize). */
+.toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 10px;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #18181b;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease;
+}
+
+.toggle:hover {
+  background: #f8fafc;
+}
+
+/* Stack spacing when a group holds more than one toggle. */
+.toggle + .toggle {
+  margin-top: 8px;
+}
+
+.toggleState {
+  font-size: 11px;
+  font-weight: 700;
+  color: #a1a1aa;
+}
+
+/* Material-ID on → rainbow swatch hinting the segmentation palette. */
+.idActive,
+.idActive:hover {
+  background: linear-gradient(90deg, #e6194b, #ffe119, #3cb44b, #4363d8, #911eb4);
+  color: #ffffff;
+  border-color: transparent;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.idActive .toggleState {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Frame Shadow on → slate, hinting cast-shadow depth. */
+.shadowActive,
+.shadowActive:hover {
+  background: #334155;
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.shadowActive .toggleState {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Optimize on → teal. */
+.optActive,
+.optActive:hover {
+  background: #0f766e;
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.optActive .toggleState {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Optimize settings (expanded under the toggle). */
+.optimize {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stats {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #f0fdfa;
+  border: 1px solid rgba(15, 118, 110, 0.22);
+  border-radius: 10px;
+}
+
+.statBig {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f766e;
+  font-variant-numeric: tabular-nums;
+}
+
+.statLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #3f3f46;
+}
+
+.statSub {
+  color: #71717a;
+  font-weight: 500;
+}
+
+.strategies {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.strategy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  text-align: left;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 9px;
+  background: #ffffff;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease;
+}
+
+.strategy:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: rgba(15, 118, 110, 0.4);
+}
+
+.strategyActive,
+.strategyActive:hover {
+  border-color: #0f766e;
+  background: #f0fdfa;
+}
+
+.strategy:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.strategyHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.strategyName {
+  font-size: 12px;
+  font-weight: 700;
+  color: #18181b;
+}
+
+.soon {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #92400e;
+  background: #fef3c7;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.strategyBlurb {
+  font-size: 11px;
+  font-weight: 500;
+  color: #71717a;
+  line-height: 1.35;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.apply {
+  padding: 6px 16px;
+  border: 1px solid #0f766e;
+  border-radius: 8px;
+  background: #0f766e;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.apply:hover:not(:disabled) {
+  background: #0d5f59;
+}
+
+.apply:disabled {
+  border-color: rgba(15, 23, 42, 0.16);
+  background: #e4e4e7;
+  color: #a1a1aa;
+  cursor: not-allowed;
+}

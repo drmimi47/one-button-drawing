@@ -1,14 +1,9 @@
+/* A flow element inside the nav pill (positioning lives on the pill). */
 .button {
-  position: fixed;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-
   display: grid;
   place-items: center;
-  width: 64px;
-  height: 64px;
+  width: 46px;
+  height: 46px;
   padding: 0;
   /* No perspective → orthographic projection: true isometric, and the top-down
      state's edges align exactly (perspective would shrink the far face). */
@@ -20,61 +15,17 @@
 }
 
 .button:hover {
-  transform: translateX(-50%) translateY(-2px);
+  transform: translateY(-2px);
 }
 
 .button:active {
-  transform: translateX(-50%) translateY(0);
+  transform: translateY(0);
 }
 
 .button:focus-visible {
   outline: 2px solid #6ea8fe;
   outline-offset: 3px;
   border-radius: 14px;
-}
-
-/* ---- Tooltip --------------------------------------------------------- */
-
-.tooltip {
-  position: absolute;
-  /* Sit just above the cube (which is centred in the 64px button), not above
-     the whole button — keeps a small, even gap from the cube. */
-  bottom: calc(100% - 8px);
-  left: 50%;
-  transform: translateX(-50%) translateY(4px);
-
-  padding: 5px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #ffffff;
-  color: #000000;
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 1.2;
-  white-space: nowrap;
-  pointer-events: none;
-
-  opacity: 0;
-  transition:
-    opacity 140ms ease,
-    transform 140ms ease;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
-}
-
-.tooltip::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 5px solid transparent;
-  border-top-color: #ffffff;
-}
-
-.button:hover .tooltip,
-.button:focus-visible .tooltip {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
 }
 
 /* ---- Isometric cube -------------------------------------------------- */
@@ -219,4 +170,24 @@
 .bottom {
   transform: rotateX(-90deg) translateZ(12px);
   background: #a1a1aa;
+}
+
+/* ---- Facade mode: 2×2×2 subdivided wireframe ------------------------- */
+
+/* Each face becomes a white panel framed in a thin dark line, with a centred
+   cross dividing it into a 2×2 grid. Across the three visible isometric faces
+   this reads as a Rubik's-style 2×2×2 cube (white cells, dark edges). Only the
+   face appearance changes — the per-face 3D transforms (and the flip-on-hover)
+   are untouched, so the cube still rotates exactly as before. */
+.facade .face {
+  background:
+    /* vertical centre line */
+    linear-gradient(#52525b, #52525b) no-repeat center / 1.5px 100%,
+    /* horizontal centre line */
+    linear-gradient(#52525b, #52525b) no-repeat center / 100% 1.5px,
+    #ffffff;
+  /* The face's own outer frame (its four edges), matched to the icon stroke weight
+     (~1.5px). inset shadow keeps the box size intact, so the seams still line up with
+     the solid-cube layout. */
+  box-shadow: inset 0 0 0 1.5px #52525b;
 }

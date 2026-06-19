@@ -1,0 +1,86 @@
+/* Dev cluster — pinned to the bottom-left corner. The Debug toggle sits level with the
+   bottom-centre nav pill and shares the top-left settings icon's 16px left inset; its tools
+   (FPS/ms, Matrix, and future additions) stack UPWARD above it so they never run off the
+   bottom of the screen. Anchoring the toggle keeps it from shifting when the tools show/hide. */
+.debug {
+  position: fixed;
+  left: 16px;
+  bottom: 40px; /* the 26px toggle centred on the nav pill's ~53px centreline */
+  z-index: 20;
+
+  display: flex;
+  flex-direction: column-reverse; /* toggle at the bottom, tools stacking above it */
+  align-items: flex-start;
+  gap: 8px;
+  user-select: none;
+}
+
+/* Left-justified column of dev tools shown above the Debug toggle (Debug on):
+   the Matrix button on top, the FPS·ms readout below, with breathing room between. */
+.devTools {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* A stat group, centred (via inline `left`) on the open space beside the central
+   menu. The `bottom` value is the nav pill's centreline (pill: bottom 24px, ~58px
+   tall → centre ≈ 53px), and translateY(50%) anchors the group by its own vertical
+   centre — so the readouts sit level with the menu cluster, not riding above it.
+   Fades in with the data. */
+.pair {
+  position: fixed;
+  bottom: 53px;
+  z-index: 20;
+  transform: translate(-50%, 50%);
+
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  white-space: nowrap;
+  user-select: none;
+
+  opacity: 0;
+  transition: opacity 320ms ease;
+  pointer-events: none;
+}
+
+.show {
+  opacity: 1;
+}
+
+/* A single readout: a large number stacked over its name + unit, centre-aligned. */
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  font-family: inherit;
+  white-space: nowrap;
+  pointer-events: auto;
+}
+
+/* The headline figure — big and bold, in the same grey as the caption beneath it. */
+.statValue {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #a1a1aa;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The caption beneath: the stat name + unit (e.g. "GFA ft²"), lighter and smaller. */
+.statLabel {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: #a1a1aa;
+}
+
+/* A readout over its global budget: both the figure and caption wash warning amber. */
+.alert .statValue,
+.alert .statLabel {
+  color: #b45309;
+}
+

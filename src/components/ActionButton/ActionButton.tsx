@@ -4,14 +4,23 @@ import styles from './ActionButton.module.css';
 
 interface ActionButtonProps {
   canvasRef: RefObject<CanvasHandle>;
+  /**
+   * Facade mode: render the cube as a 2×2×2 subdivided wireframe (white panels with
+   * thin dark grid lines) instead of the solid shaded cube.
+   */
+  facade?: boolean;
+  /**
+   * Facade mode only: invoked at the start of a cube gesture to ACTIVATE the Facade Layers tool, so the
+   * placement that follows commits a trim BORDER (12'×12' default) instead of a room.
+   */
+  onArmFacadeBorder?: () => void;
 }
 
 /** Pointer travel (px) before a press is treated as a drag rather than a click. */
 const DRAG_THRESHOLD = 4;
 
 /**
- * Primary action, pinned bottom-centre. Renders an isometric 3D cube and
- * reveals a "Space" tooltip on hover/focus.
+ * Primary action, pinned bottom-centre. Renders an isometric 3D cube.
  *
  * Two ways to place a square, both showing a cursor-following preview:
  *  - Click: arms placement; the preview follows the mouse and commits on the
@@ -20,7 +29,7 @@ const DRAG_THRESHOLD = 4;
  *    (pointer capture keeps events on the button) and commits where released.
  *  - Keyboard (Enter/Space, detail === 0): arms from the viewport centre.
  */
-export function ActionButton({ canvasRef }: ActionButtonProps) {
+export function ActionButton({ canvasRef, facade = false, onArmFacadeBorder }: ActionButtonProps) {
   const gesture = useRef({ active: false, dragging: false, startX: 0, startY: 0 });
 
   // The cube jumps periodically to invite the first click. Once the user
@@ -50,6 +59,8 @@ export function ActionButton({ canvasRef }: ActionButtonProps) {
   const handlePointerDown = (e: PointerEvent<HTMLButtonElement>) => {
     if (e.button !== 0) return;
     setInviting(false);
+    // In Facade mode, arm the Layers tool so the placement this gesture starts commits a trim border.
+    if (facade) onArmFacadeBorder?.();
     gesture.current = { active: true, dragging: false, startX: e.clientX, startY: e.clientY };
     e.currentTarget.setPointerCapture(e.pointerId);
   };
@@ -95,6 +106,7 @@ export function ActionButton({ canvasRef }: ActionButtonProps) {
   const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
     setInviting(false);
     if (e.detail === 0) {
+      if (facade) onArmFacadeBorder?.();
       canvasRef.current?.startPlacement(window.innerWidth / 2, window.innerHeight / 2);
     }
   };
@@ -111,9 +123,6 @@ export function ActionButton({ canvasRef }: ActionButtonProps) {
       onPointerLeave={handlePointerLeave}
       onClick={handleClick}
     >
-      <span className={styles.tooltip} aria-hidden="true">
-        Space
-      </span>
       <span
         className={`${styles.cubeJump} ${inviting ? styles.inviting : ''} ${
           paused ? styles.paused : ''
@@ -121,7 +130,7 @@ export function ActionButton({ canvasRef }: ActionButtonProps) {
         aria-hidden="true"
         onAnimationIteration={handleAnimationIteration}
       >
-        <span className={styles.cube}>
+        <span className={`${styles.cube} ${facade ? styles.facade : ''}`}>
           <span className={`${styles.face} ${styles.front}`} />
           <span className={`${styles.face} ${styles.back}`} />
           <span className={`${styles.face} ${styles.right}`} />

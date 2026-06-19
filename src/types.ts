@@ -4,6 +4,9 @@
  */
 export type DrawLayer = 'grid' | 'scene' | 'all';
 
+/** Website-wide measurement unit for dimensions and area readouts. */
+export type LengthUnit = 'feet' | 'meters' | 'centimeters';
+
 /** Viewport transform for the infinite canvas. */
 export interface Camera {
   /** Horizontal pan offset in CSS pixels (screen space). */
@@ -21,6 +24,25 @@ export interface Camera {
 export interface PendingPlacement {
   sx: number;
   sy: number;
+  /**
+   * Interior square size in WORLD units. Set from the radial menu's highlighted
+   * room type; when absent the preview falls back to the default on-screen size.
+   */
+  worldSize?: number;
+  /** Room title to inherit on commit; when absent the shape is named "Room". */
+  name?: string;
+  /**
+   * A saved Library cluster being placed: its shapes normalised so the cluster's
+   * outer bounding box is centred on the world origin. When set, the preview draws
+   * the whole arrangement (at the current zoom) and commit drops a fresh, re-id'd
+   * copy centred on the cursor — overriding the single-square placement above.
+   */
+  clusterShapes?: Square[];
+  /**
+   * Wall-snapped world centre for the single-square preview, set by the draw layer
+   * when alignment snapping engages. Commit uses it so the placed room lands snapped.
+   */
+  snapCenter?: { x: number; y: number };
 }
 
 /** A rubber-band selection rectangle, in canvas-local screen pixels. */
@@ -60,6 +82,72 @@ export interface Square {
    * local bounding box. Absent ⇒ a plain rectangle (the default).
    */
   corners?: { x: number; y: number }[];
+  /**
+   * Per-edge wall thickness (world units), one entry per interior edge (edge `i`
+   * runs corner `i`→`i+1`). Set on free polygons — chiefly boolean (N-gon) results —
+   * so each wall can be thickened independently; a plain rect/quad leaves this unset
+   * and uses {@link Walls} (n/e/s/w). Always kept the same length as `corners`.
+   */
+  wallEdges?: number[];
+  /**
+   * Display title shown above the area readout (e.g. "Patient Room"). Defaults
+   * to "Room" for a plain square; inherited from the radial menu when dragged
+   * from a room segment.
+   */
+  name?: string;
+  /**
+   * When true, the room's interior square footage is locked: edge/vertex edits
+   * scale the whole shape about its centroid to preserve the area. Toggled by the
+   * little lock icon under the ft² readout (shown only while dimensions are).
+   */
+  areaLocked?: boolean;
+}
+
+/**
+ * A building footprint: an axis-aligned rectangle (world units) drawn with a black
+ * outline and white infill BEHIND every room, so shapes/dimensions sit on top of it.
+ * No walls or rotation — it's the gross building boundary, drawn by the Generate
+ * tool menu's square tool and resizable via its own Length/Width dimension labels.
+ */
+export interface Footprint {
+  id: string;
+  /** Top-left corner, in world coordinates. */
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** Live canvas statistics surfaced to the bottom StatsBar (all areas in ft²). */
+export interface CanvasStats {
+  roomCount: number;
+  /** Number of rooms currently flagged (yellow) for violating a constraint. */
+  constraintFlags: number;
+  /** Sum of every room's interior (white infill) area — Gross Internal Area (GIA). */
+  totalAreaSqft: number;
+  /** Sum of every room's outer footprint (infill + wall band) — Gross Floor Area (GFA). */
+  grossAreaSqft: number;
+  /**
+   * Usable Floor Area (UFA): sum of interior area of usable rooms only (excludes the
+   * circulation/service types in NON_USABLE_ROOM_KEYS). Always ≤ totalAreaSqft (GIA).
+   */
+  usableAreaSqft: number;
+  /**
+   * True when the summed interior area exceeds the global Max Total Area constraint —
+   * drives the full-canvas yellow wash until rooms are deleted back under budget.
+   */
+  totalAreaExceeded: boolean;
+  /** True when the summed GROSS area exceeds the global Max Total Gross Area constraint. */
+  grossAreaExceeded: boolean;
+  /** True when the room count exceeds the global Max Room Count constraint. */
+  roomCountExceeded: boolean;
+  /**
+   * Names of the constraint fields currently being violated anywhere on the canvas
+   * (per-room rules unioned across all rooms, plus the breached global budgets).
+   * Lets the Constraints box highlight the exact lines whose rules are in effect and
+   * broken. Each entry is a `keyof Constraints` (e.g. "minRoomSideFt").
+   */
+  violatedKeys: string[];
 }
 
 /** Colors used when rendering placed squares and their selection handles. */

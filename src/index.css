@@ -2,7 +2,7 @@
   --bg: #f7f8fa;
   color-scheme: light;
 
-  font-family: Garamond, 'EB Garamond', 'Times New Roman', Georgia, serif;
+  font-family: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', 'Courier New', monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -11,7 +11,7 @@
   box-sizing: border-box;
 }
 
-/* Form controls don't inherit font-family by default — make them Garamond too. */
+/* Form controls don't inherit font-family by default — make them mono too. */
 button,
 input,
 textarea,

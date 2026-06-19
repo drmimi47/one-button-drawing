@@ -1,0 +1,663 @@
+/* Floating pill, pinned bottom-centre (overflow visible so the cube can hop). */
+.nav {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  /* Above the panel backdrop so nav buttons stay clickable (lets users switch
+     panels directly instead of the outside-click closing first). */
+  z-index: 32;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 999px;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.14);
+}
+
+/* Equal-width label groups → the cube (between them) sits on the pill centre. */
+.side {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.left {
+  justify-content: flex-end;
+}
+
+.right {
+  justify-content: flex-start;
+}
+
+.item {
+  position: relative;
+  border: none;
+  background: none;
+  cursor: pointer;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #52525b;
+
+  padding: 9px 14px;
+  border-radius: 999px;
+  user-select: none;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+}
+
+.item:hover:not(:disabled) {
+  color: #18181b;
+  background: rgba(15, 23, 42, 0.05);
+}
+
+/* Disabled nav item (e.g. Render outside Facade mode): greyed out, non-interactive. */
+.item:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* Icon glyphs replacing the nav labels — keep them on the text baseline so the
+   count badge still rides as a superscript beside them. */
+.icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Live count superscript on a nav item (e.g. saved Library components, constraint
+   flags). Rides above the label baseline; the count itself isn't uppercased. */
+.badge {
+  /* Absolutely pinned to the button's top-right corner so showing/changing the
+     count never reflows the centred icon (which looked like a jitter). */
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  /* Default badge (e.g. the Library saved-count) stays the accent blue. */
+  color: #6ea8fe;
+}
+
+/* Constraint-flag badge — the constraint yellow (#facc15), darkened to a gold so the
+   small superscript stays legible against the near-white pill / white popups. */
+.badgeAlert {
+  color: #b8860b;
+}
+
+.item:focus-visible {
+  outline: 2px solid #6ea8fe;
+  outline-offset: 1px;
+}
+
+/* Toggled-on item (e.g. Constraints panel open): the black "active" pill. */
+.active,
+.active:hover {
+  color: #ffffff;
+  background: #18181b;
+}
+
+/* ---- Outside-click backdrop ------------------------------------------ */
+
+/* Transparent full-screen layer beneath the open panel. A click anywhere on it
+   closes the panel; the popups (z-index 30) sit above it so they're unaffected.
+   The nav pill (z-index 32) also sits above it, keeping its buttons clickable. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 29;
+  background: transparent;
+}
+
+/* ---- Top-right popup card (Constraints, Library) --------------------- */
+
+/* A single card pinned top-right (like the render panel): header + body + footer. It closes
+   only via its × button — no backdrop / outside-click dismiss — so it persists during canvas edits. */
+.popup {
+  position: fixed;
+  top: 72px;
+  right: 16px;
+  z-index: 30;
+
+  width: 400px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 88px);
+
+  display: flex;
+  flex-direction: column;
+
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  border-radius: 14px;
+  box-shadow: 0 18px 52px rgba(15, 23, 42, 0.26);
+  overflow: hidden;
+}
+
+/* Header: the popup title (left) and a × close button (right). */
+.popupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 12px 16px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.popupTitle {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #18181b;
+  user-select: none;
+}
+
+.popupClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  color: #52525b;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+}
+
+.popupClose:hover {
+  color: #18181b;
+  background: #f1f1f3;
+}
+
+.popupClose:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Footer row inside the card: a saved/unsaved hint on the left, Reset/Save on the right. */
+.popupActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.popupHint {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: #a1a1aa;
+  user-select: none;
+}
+
+/* Right-side button group in the constraints popup (Reset defaults + Save). */
+.popupButtons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Secondary "Reset defaults" button — ghost style matching the .fixSkip token. */
+.resetButton {
+  border: none;
+  cursor: pointer;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #52525b;
+
+  padding: 9px 16px;
+  background: rgba(15, 23, 42, 0.05);
+  border-radius: 999px;
+  transition:
+    color 120ms ease,
+    background 120ms ease,
+    opacity 120ms ease;
+}
+
+.resetButton:hover:not(:disabled) {
+  color: #18181b;
+  background: rgba(15, 23, 42, 0.1);
+}
+
+.resetButton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.resetButton:focus-visible {
+  outline: 2px solid #6ea8fe;
+  outline-offset: 2px;
+}
+
+.saveButton {
+  border: none;
+  cursor: pointer;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+
+  padding: 9px 22px;
+  background: #18181b;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.2);
+  transition:
+    background 120ms ease,
+    opacity 120ms ease;
+}
+
+.saveButton:hover:not(:disabled) {
+  background: #000000;
+}
+
+.saveButton:disabled {
+  opacity: 0.4;
+  cursor: default;
+  box-shadow: none;
+}
+
+.saveButton:focus-visible {
+  outline: 2px solid #6ea8fe;
+  outline-offset: 2px;
+}
+
+/* Constraints editor: a highlight backdrop behind a transparent-text textarea, so
+   #-comment lines can be greyed while the textarea owns editing and the caret. */
+.popupField {
+  position: relative;
+  height: 320px;
+  overflow: hidden;
+}
+
+/* Shared text metrics — the backdrop and the textarea MUST match exactly so the
+   highlighted text sits perfectly under what's typed. */
+.popupHighlight,
+.popupInput {
+  box-sizing: border-box;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 14px 16px;
+
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: normal;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  border: 0;
+}
+
+/* Backdrop: shows the text (normal dark; comments lighter grey). Never interactive. */
+.popupHighlight {
+  color: #18181b;
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+}
+
+/* Comment lines (Python-style #…) — lighter grey, signalling they're ignored. */
+.comment {
+  color: #b8bcc4;
+}
+
+/* A constraint line whose rule is currently violated on the canvas — washed the
+   same warning yellow (#facc15) as the canvas flags so the box mirrors them. The
+   clone keeps the highlight intact if the line wraps across rows. */
+.violated {
+  background: rgba(250, 204, 21, 0.42);
+  border-radius: 3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Textarea on top: transparent text (the backdrop shows it) but a visible caret. */
+.popupInput {
+  color: transparent;
+  caret-color: #18181b;
+  background: transparent;
+  resize: none;
+  outline: none;
+  overflow-y: auto;
+}
+
+.popupInput::placeholder {
+  color: #a1a1aa;
+}
+
+/* Library popup body: taller than the constraints editor; caps to the viewport so the card
+   never runs off-screen (the saved-cluster list scrolls inside). */
+.libraryField {
+  height: 520px;
+  max-height: calc(100vh - 200px);
+}
+
+/* ---- Analyze popup (Facade standardization breakdown) ---------------- */
+
+/* Scrollable body listing the standardized panel types. */
+.analyzeBody {
+  padding: 12px;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+/* Empty state when no panels have been placed yet. */
+.analyzeEmpty {
+  margin: 8px 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #71717a;
+}
+
+/* Totals strip above the type list (panel count · unique types). */
+.analyzeSummary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 6px 10px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  font-size: 12px;
+  color: #71717a;
+}
+
+.analyzeSummary strong {
+  color: #18181b;
+  font-weight: 700;
+}
+
+.panelTypeList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* One standardized-type row — a button so the whole row selects that type's panels. */
+.panelTypeRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 10px;
+  background: #ffffff;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+.panelTypeRow:hover {
+  border-color: rgba(15, 23, 42, 0.18);
+  background: #fafafa;
+}
+
+/* Colour chip matching the panel's on-canvas type colour. */
+.panelTypeSwatch {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.18);
+}
+
+.panelTypeInfo {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.panelTypeName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #18181b;
+}
+
+.panelTypeDims {
+  font-size: 11px;
+  color: #71717a;
+}
+
+/* Count badge ("×N") at the row's trailing edge. */
+.panelTypeCount {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 700;
+  color: #3f3f46;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Library nav button while a canvas selection is dragged over it: a blue, raised
+   "drop here" affordance so the save target reads clearly mid-drag. */
+.dropTarget,
+.dropTarget:hover {
+  color: #ffffff;
+  background: #6ea8fe;
+  box-shadow: 0 0 0 3px rgba(110, 168, 254, 0.35);
+}
+
+/* ---- Generate panel (tool menu over the button + centred prompt) ----- */
+
+/* Tool menu floating centred above the Generate nav button — same pill shape,
+   radius, and surface as the bottom nav pill. `left`/`top` come from the button's
+   measured rect (inline); the transform centres it and lifts it above that point. */
+.toolMenu {
+  position: fixed;
+  z-index: 31; /* above the outside-click backdrop (29) and the prompt pill (30) */
+  transform: translate(-50%, -100%);
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 999px;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.14);
+}
+
+.tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+
+  border: none;
+  border-radius: 999px;
+  background: none;
+  color: #52525b;
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+}
+
+.tool:hover:not(:disabled) {
+  color: #18181b;
+  background: rgba(15, 23, 42, 0.05);
+}
+
+/* Greyed out until it has something to act on (e.g. a constraint violation). */
+.tool:disabled {
+  color: #c4c4cc;
+  cursor: default;
+}
+
+.tool:focus-visible {
+  outline: 2px solid #6ea8fe;
+  outline-offset: 1px;
+}
+
+/* Smart-find match count shown inside a .toolMenu pill above the Generate button.
+   Matches the tool buttons' height so the pill keeps the same rounded profile. */
+.matchCount {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 10px;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: #52525b;
+}
+
+/* Skip / Approve buttons inside the constraint-fix pill (above the Constraints button). */
+.fixSkip,
+.fixApprove {
+  height: 36px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition:
+    color 120ms ease,
+    background 120ms ease,
+    opacity 120ms ease;
+}
+
+.fixSkip {
+  color: #52525b;
+  background: rgba(15, 23, 42, 0.05);
+}
+
+.fixSkip:hover {
+  color: #18181b;
+  background: rgba(15, 23, 42, 0.1);
+}
+
+.fixApprove {
+  color: #ffffff;
+  background: #6ea8fe;
+}
+
+.fixApprove:hover:not(:disabled) {
+  background: #4f93fb;
+}
+
+.fixApprove:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.search {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 30;
+
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 620px;
+  max-width: calc(100vw - 32px);
+  padding: 14px 20px;
+
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 999px;
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.22);
+}
+
+.search:focus-within {
+  border-color: #6ea8fe;
+}
+
+.searchIcon {
+  flex: none;
+  color: #a1a1aa;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: none;
+  margin: 0;
+  padding: 0;
+
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+  color: #18181b;
+}
+
+.searchInput::placeholder {
+  color: #a1a1aa;
+}
+
+/* Custom rotating placeholder overlaid on the (empty) input, so it can crossfade
+   between examples — something a native ::placeholder can't do. Aligned to the
+   input's text start and vertically centred; never intercepts pointer events. */
+.searchPlaceholder {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+  color: #a1a1aa;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 300ms ease;
+}
+
+/* Shown at the right of the pill while the prompt's LLM request is in flight. */
+.searchHint {
+  flex: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6ea8fe;
+  white-space: nowrap;
+}

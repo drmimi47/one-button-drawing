@@ -1,4 +1,4 @@
-import type { GridTheme, ShapeTheme } from './types';
+import type { GridTheme, LengthUnit, ShapeTheme } from './types';
 
 /** Zoom limits and sensitivity for wheel-based zooming. */
 export const MIN_SCALE = 0.1;
@@ -49,6 +49,13 @@ export const GRID_THEME: GridTheme = {
   border: 'rgba(15, 23, 42, 0.20)',
 };
 
+/**
+ * Dimension-line offset (screen px) from a facade BORDER's edge. Much smaller than the room/footprint gap
+ * (which clears a wall band) so the border's dimensions hug its actual edges — a wall-less trim has no band to
+ * clear. Used for both drawing and the editable-label hit-test, so they stay in sync.
+ */
+export const BORDER_DIM_GAP = 12;
+
 /** A freshly placed square spans this many screen pixels, regardless of zoom. */
 export const DEFAULT_SQUARE_SCREEN_SIZE = 120;
 
@@ -58,6 +65,22 @@ export const DEFAULT_SQUARE_SCREEN_SIZE = 120;
  * = 144 ft²). Area readouts derive feet from world units via this factor.
  */
 export const WORLD_UNITS_PER_FOOT = 10;
+
+/** Exact feet-per-metre, so a length has the same physical size in either unit. */
+export const FEET_PER_METER = 3.280839895;
+
+/** World-pixels per metre, derived so 1 m renders 3.2808× a foot. */
+export const WORLD_UNITS_PER_METER = WORLD_UNITS_PER_FOOT * FEET_PER_METER;
+
+/** World-pixels per centimetre (1/100 of a metre). */
+export const WORLD_UNITS_PER_CENTIMETER = WORLD_UNITS_PER_METER / 100;
+
+/** World-pixels per one unit of the active measurement system. */
+export function worldUnitsPerUnit(unit: LengthUnit): number {
+  if (unit === 'meters') return WORLD_UNITS_PER_METER;
+  if (unit === 'centimeters') return WORLD_UNITS_PER_CENTIMETER;
+  return WORLD_UNITS_PER_FOOT;
+}
 
 /**
  * Wall thickness drawn around each room, in feet (6 inches). The band is offset
@@ -91,8 +114,16 @@ export const EDGE_HIT_TOLERANCE = 6;
 /** Rotation snaps to this increment, in degrees (24 stops over a full turn). */
 export const ROTATION_SNAP_DEG = 15;
 
-/** Radius around each corner that activates rotation, in screen pixels. */
-export const ROTATION_CORNER_RADIUS = 13;
+/** Half-size of the square zone that activates rotation at a corner, in px. */
+export const ROTATION_CORNER_RADIUS = 15;
+
+/**
+ * Outward nudge (px) of each rotation zone along its corner's bisector, so the
+ * zone sits over the corner rotation arc rather than on the bare corner —
+ * keeping the arc symbol, angle readout, and grabbable area cohesive. (≈10px per
+ * axis on a right-angled corner.)
+ */
+export const ROTATION_CORNER_OFFSET = 14;
 
 // Curved double-headed arrow, white halo over black, hotspot at its centre.
 const ROTATE_CURSOR_SVG =
@@ -108,6 +139,15 @@ const ROTATE_CURSOR_SVG =
 export const ROTATE_CURSOR = `url("data:image/svg+xml,${encodeURIComponent(
   ROTATE_CURSOR_SVG,
 )}") 14 14, auto`;
+
+/**
+ * Overlap visual cues — groundwork for boolean operations (not the ops
+ * themselves). Where two rooms overlap, the grey wall lightens by this fraction
+ * toward white (the shared-infill and wall-in-both sub-regions use debug colours
+ * for now). NO transparency is introduced, so the per-pixel fill path stays
+ * fully opaque.
+ */
+export const OVERLAP_WALL_LIGHTEN = 0.28; // mix the wall 28% toward white
 
 // Fully opaque colors — no alpha blending on the per-pixel fill path.
 export const SHAPE_THEME: ShapeTheme = {

@@ -11,9 +11,12 @@
   pointer-events: none;
 }
 
-/* Dynamic squares + handles, stacked on top; owns all canvas interaction. */
+/* Dynamic squares + handles, stacked on top; owns all canvas interaction. The
+   global Max-Total-Area yellow wash (App) sits at z-index 1, between the grid and
+   this scene layer, so the rooms — and any per-room flags painted on them — stay
+   fully visible above the wash. */
 .scene {
-  z-index: 1;
+  z-index: 2;
 }
 
 /* Floating editor over a clicked dimension label. */

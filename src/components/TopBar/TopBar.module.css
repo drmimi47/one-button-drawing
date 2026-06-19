@@ -1,0 +1,196 @@
+/* Top-left toolbar: a row of pills matching the bottom nav surface. Function TBD. */
+.bar {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 32;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Shared pill surface — same light card as the bottom nav pill. */
+.menu,
+.pill {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 999px;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.14);
+  color: #52525b;
+  user-select: none;
+}
+
+/* Circular menu button (like a bottom-menu sub-button). */
+.menu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+}
+
+.menu:hover {
+  color: #18181b;
+  background: #e9e9ec;
+}
+
+.menu:focus-visible {
+  outline: 2px solid #6ea8fe;
+  outline-offset: 1px;
+}
+
+/* Breadcrumb chevron between PLAN and UNTITLED (UNTITLED belongs to PLAN mode). */
+.sep {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #a1a1aa;
+  user-select: none;
+}
+
+/* Text pills (PLAN, UNTITLED). */
+.pill {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 16px;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+/* Option pill + its flyout anchor. */
+.optionWrap {
+  position: relative;
+  display: flex;
+}
+
+.optionBtn {
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+}
+
+.optionBtn:hover {
+  color: #18181b;
+  background: #e9e9ec;
+}
+
+.optionBtn:focus-visible {
+  outline: 2px solid #6ea8fe;
+  outline-offset: 1px;
+}
+
+/* Flyout pill below "Option 1" — same width (100% of the anchor), but taller: two
+   clickable rows split by a thin divider. A little gap sits above it (like the tool menu
+   above the Constraints button). Matches the single pills' 20px corner curvature. */
+.optionMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 20px;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.14);
+}
+
+.optionRow {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 16px;
+
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #52525b;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+}
+
+.optionRow:hover {
+  color: #18181b;
+  background: #e9e9ec;
+}
+
+/* Thin horizontal line splitting the two rows. */
+.optionDivider {
+  height: 1px;
+  background: rgba(15, 23, 42, 0.1);
+}
+
+/* The "Mode:" pill — clickable, cycles modes. */
+.modeBtn {
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+}
+
+.modeBtn:hover {
+  color: #18181b;
+  background: #e9e9ec;
+}
+
+.modeBtn:focus-visible {
+  outline: 2px solid #6ea8fe;
+  outline-offset: 1px;
+}
+
+/* The editable document-title pill — preserves the user's own casing and keeps clean
+   monospace metrics (no tracking) so the input width can size exactly in `ch`. */
+.title {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.titleBtn {
+  cursor: text;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+}
+
+.titleBtn:hover {
+  color: #18181b;
+  background: #e9e9ec;
+}
+
+.titleBtn:focus-visible {
+  outline: 2px solid #6ea8fe;
+  outline-offset: 1px;
+}
+
+.titleInput {
+  min-width: 0;
+  color: #18181b;
+  outline: none;
+}
+
+.titleInput:focus {
+  border-color: #6ea8fe;
+}
