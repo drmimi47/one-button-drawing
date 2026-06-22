@@ -1,1 +1,0 @@
-{"root":["./src/app.tsx","./src/constants.ts","./src/main.tsx","./src/types.ts","./src/canvas/grid.ts","./src/components/actionbutton/actionbutton.tsx","./src/components/gridcontrols/gridcontrols.tsx","./src/components/infinitecanvas/infinitecanvas.tsx","./src/hooks/usecamera.ts","./src/hooks/usewindowsize.ts"],"errors":true,"version":"5.9.3"}

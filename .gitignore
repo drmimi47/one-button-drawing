@@ -11,6 +11,12 @@ dist
 dist-ssr
 *.local
 
+# TypeScript incremental build cache
+*.tsbuildinfo
+
+# Local media / recordings (not part of the app)
+*.mp4
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
