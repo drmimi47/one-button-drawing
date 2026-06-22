@@ -12,3 +12,9 @@ by an editable adjacency matrix; the app parses those constraints — via the An
 LLM with a deterministic regex fallback — flags violations, and renders the resulting
 partitions and facades. Sign-in (optional, via Firebase) persists your constraints and
 matrix per account, while Guest mode runs everything locally without saving.
+
+## Setup & deployment
+
+For provisioning on a VM or other host — prerequisites, build/run steps, the full
+environment-variable reference, the client-bundle security caveats, and whether Firebase
+project access is required — see **[SETUP.md](SETUP.md)**.
